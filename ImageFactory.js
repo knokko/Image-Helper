@@ -116,6 +116,79 @@ const ImageFactory = {
 		image.src = canvas.toDataURL();
 		return image;
 	},
+	createTextAreaImage : function(text, props, width, height){
+		this.completeTextProperties(props);
+		const canvas = document.createElement('canvas');
+		canvas.width = width;
+		canvas.height = height;
+		const context = canvas.getContext('2d');
+		const minBX = Math.round(width * props.borderX);
+		const minBY = Math.round(height * props.borderY);
+		const maxBX = Math.round((1 - props.borderX) * width);
+		const maxBY = Math.round((1 - props.borderY) * height);
+		const outerX = props.borderX + props.marginX;
+		const outerY = props.borderY + props.marginY;
+		const minTX = Math.round(width * outerX);
+		const minTY = Math.round(height * outerY);
+		const maxTX = Math.round((1 - outerX) * width);
+		const maxTY = Math.round((1 - outerY) * height);
+		const textWidth = maxTX - minTX + 1;
+		const textHeight = maxTY - minTY + 1;
+		context.fillStyle = props.borderColor;
+		context.fillRect(0, 0, minBX, height);
+		context.fillRect(minBX, 0, maxBX - minBX, minBY);
+		context.fillRect(maxBX, 0, width - maxBX, height);
+		context.fillRect(minBX, maxBY, maxBX - minBX, height - maxBY);
+		context.fillStyle = props.backgroundColor;
+		context.fillRect(minBX, minBY, maxBX - minBX, maxBY - minBY);
+		context.fillStyle = props.textColor;
+		context.font = props.font;
+		const words = text.split(' ');
+		const spaceWidth = context.measureText(' ').width;
+		const wordsCount = words.length;
+		const wordLengths = new Array(wordsCount);
+		for (let index = 0; index < wordsCount; index++) {
+			wordLengths[index] = context.measureText(words[index]).width;
+		}
+		let wordIndexStart = 0;
+		let wordIndexEnd = 0;
+		let currentLength = 0;
+		let lineIndex = 0;
+		const lines = [];
+		for (; wordIndexEnd <= wordsCount; wordIndexEnd++) {
+			if (wordIndexEnd < wordsCount){
+				currentLength += wordLengths[wordIndexEnd];
+			}
+			if (currentLength > textWidth || wordIndexEnd >= wordsCount) {
+				lines[lineIndex] = words[wordIndexStart];
+				for (let wordIndex = wordIndexStart + 1; wordIndex < wordIndexEnd; wordIndex++) {
+					lines[lineIndex] += ' ' + words[wordIndex];
+				}
+				console.log('line "' + lines[lineIndex] + '" has length ' + currentLength)
+				if (wordIndexEnd < wordsCount){
+					lineIndex++;
+					wordIndexStart = wordIndexEnd;
+					currentLength = wordLengths[wordIndexEnd];
+				}
+			} else {
+				currentLength += spaceWidth;
+			}
+		}
+		console.log('text is ', text);
+		console.log('words is ', words);
+		console.log('so lines is ', lines);
+		console.log('since wordLengths is ', wordLengths);
+		const boundHeight = ImageFactory.determineFontHeight('font: ' + context.font + ';');
+		let textY = minTY + Math.round(boundHeight * ImageFactory.ASSENT_FACTOR);
+		const linesLength = lines.length;
+		for (lineIndex = 0; lineIndex < linesLength; lineIndex++) {
+			context.fillText(lines[lineIndex], minTX, textY);
+			textY += boundHeight;
+		}
+		const image = new Image();
+		image.src = canvas.toDataURL();
+		return image;
+	},
 	completeTextProperties : function(props){
 		for(let key in ImageFactory.DEFAULT_TEXT_PROPERTIES){
 			if(props[key] === undefined){
