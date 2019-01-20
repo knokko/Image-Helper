@@ -23,6 +23,10 @@ const ImageFactory = {
 		body.removeChild(dummy);
 		return result;
 	},
+	getFontSize : function(font){
+		const indexRight = font.indexOf('px');
+		return parseInt(font.substring(font.lastIndexOf(' ', indexRight), indexRight));
+	},
 	multiplyFontSize : function(context, factor) {
 		const font = context.font;
 		const indexRight = font.indexOf('px');
@@ -116,6 +120,37 @@ const ImageFactory = {
 		image.src = canvas.toDataURL();
 		return image;
 	},
+	createCharImage : function(char, props){
+		this.completeTextProperties(props);
+		const canvas = document.createElement('canvas');
+		const fontSize = this.getFontSize(props.font);
+		canvas.width = fontSize;
+		canvas.height = fontSize * 5 / 4;
+		let ctx = canvas.getConext('2d');
+		ctx.font = props.font;
+		// TODO finish this function
+		const boundWidth = Math.ceil(ctx.measureText(char).width);
+		const boundHeight = Math.ceil(ImageFactory.determineFontHeight('font: ' + props.font + ';'));
+		if (boundWidth > 0 && boundHeight > 0){
+			canvas.width = boundWidth;
+			canvas.height = boundHeight;
+			ctx = canvas.getContext('2d');
+			ctx.font = props.font;
+			ctx.fillStyle = props.textColor;
+
+			// The boundHeight / 3 is a guess because line metrics are experimental -_-
+			ctx.fillText(char, 0, boundHeight / 3);
+			const image = new Image();
+			image.src = canvas.toDataURL();
+			return image;
+		} else {
+			canvas.width = 1;
+			canvas.height = 1;
+			const image = new Image();
+			image.src = canvas.toDataURL();
+			return image;
+		}
+	},
 	createTextAreaImage : function(text, props, width, height){
 		this.completeTextProperties(props);
 		const canvas = document.createElement('canvas');
@@ -174,10 +209,6 @@ const ImageFactory = {
 				currentLength += spaceWidth;
 			}
 		}
-		console.log('text is ', text);
-		console.log('words is ', words);
-		console.log('so lines is ', lines);
-		console.log('since wordLengths is ', wordLengths);
 		const boundHeight = ImageFactory.determineFontHeight('font: ' + context.font + ';');
 		let textY = minTY + Math.round(boundHeight * ImageFactory.ASSENT_FACTOR);
 		const linesLength = lines.length;
