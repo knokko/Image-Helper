@@ -123,10 +123,9 @@ const ImageFactory = {
 	createCharImage : function(char, props){
 		this.completeTextProperties(props);
 		const canvas = document.createElement('canvas');
-		const fontSize = this.getFontSize(props.font);
-		canvas.width = fontSize;
-		canvas.height = fontSize * 5 / 4;
-		let ctx = canvas.getConext('2d');
+		canvas.width = 1;
+		canvas.height = 1;
+		let ctx = canvas.getContext('2d');
 		ctx.font = props.font;
 		// TODO finish this function
 		const boundWidth = Math.ceil(ctx.measureText(char).width);
@@ -138,8 +137,8 @@ const ImageFactory = {
 			ctx.font = props.font;
 			ctx.fillStyle = props.textColor;
 
-			// The boundHeight / 3 is a guess because line metrics are experimental -_-
-			ctx.fillText(char, 0, boundHeight / 3);
+			// The boundHeight * 4 / 5 is a guess because line metrics are experimental -_-
+			ctx.fillText(char, 0, boundHeight * 4 / 5);
 			const image = new Image();
 			image.src = canvas.toDataURL();
 			return image;
